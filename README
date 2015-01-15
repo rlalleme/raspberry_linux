@@ -1,0 +1,32 @@
+Custom-made Linux for Raspberry Pi
+----------------------------------
+
+This project provides a modified Linux based on RaspBian.
+
+It offers more defaults tools:
+ROS
+Boost
+gcc/g++
+cmake
+...
+
+This repo only contain the file on how to do.
+The reading order is:
+ *prepare_the_linux
+ *installation_ros
+ *create_image
+ *use_the_new_linux
+
+
+Download
+--------
+
+The image is available at:
+http://homepages.laas.fr/rlalleme/en/misc.html
+
+
+
+
+
+Written by Raphaël Lallement, <raphael . lallement [at] laposte . net>
+Last update 15/01/2014

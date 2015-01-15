@@ -1,0 +1,67 @@
+How to create an image from a fully configured SD
+-------------------------------------------------
+Written by Raphaël Lallement, <raphael . lallement [at] laposte . net>
+Last update 15/01/2014
+
+
+This part present the last step to create a custom-made image.
+
+It assumes that a fully configured linux is set up on the SD (and that there are two partitions: boot and root).
+
+The SD should be plugged on a computer (not the raspberry) but NOT MOUNTED.
+
+Create the different images
+---------------------------
+
+First copy both partitions
+$ sudo dd if=/dev/<partition_for_boot> of=<output_file>.boot.iso
+$ sudo dd if=/dev/<partition_for_root> of=<output_file>.root.iso
+Example: sudo dd if=/dev/mmcblk0p2 of=astups_raspberry.root.iso
+
+Then create a "blank" partitions
+$ sudo dd if=/dev/zero of=<output_file>.img bs=1 count=0 seek=4G
+
+
+Prepare the "holder"
+--------------------
+
+Format the "blank" image to hold the two images
+$ sudo fdisk <output_file>.img
+N.B. Create partitions at least the same size that the two images
+n		#Create a first partition for the boot
+p
+<Enter>
+<Enter>
++100M
+a		#Toggle bootflag on the partition
+1
+t		#Change the falg type to FAT32
+c
+n		#Create a second partition for the root
+p
+<Enter>
+<Enter>
+<Enter>
+w		#Write the new partitions
+
+
+Finish by inserting the two images in the holder
+------------------------------------------------
+
+Create two devices from the partitions
+$ sudo kpartx -a <output_file>.img
+(You can check with: ls /dev/mapper, there should be some "loop0p<i>")
+
+Now it is possible to copy the content to the partitions
+$ sudo dd if=<output_file>.boot.iso of=/dev/mapper/loop0p1 bs=1M
+$ sudo dd if=<output_file>.root.iso of=/dev/mapper/loop0p2 bs=1M
+
+Finally remove the mapping
+$ sudo kpartx -d <output_file>.img
+
+
+Use it to prepare SD card
+-------------------------
+
+Copy the image to the SD
+$ sudo dd if=<output_file>.img of=/dev/mmcblk0 bs=1M

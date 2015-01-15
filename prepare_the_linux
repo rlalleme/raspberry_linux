@@ -1,0 +1,63 @@
+This file describe the process to create a custom Linux
+-------------------------------------------------------
+---------------------------------------
+Written by Raphaël Lallement, <raphael . lallement [at] laposte . net>
+Last update 15/01/2014
+
+
+First create the appropriate partitions
+For instance to have a 100M partition for the boot and a 3.8G for the system
+# fdisk /dev/<disk>
+o		#to erase anything
+n
+p
+<Enter>
++100M		#to create a 100M partition
+
+Then
+n
+p
+<Enter>
+8194047		#to create a 3.8G partition (3.8 * 1024 * 1024 * 2 - 1 + 206848)
+					block size to sector ----^   ^      ^
+						       0-indexed ----|      |
+				      index of the last previous sector ----|
+
+Then change the type of the first partition to VFAT
+t
+1
+c
+
+Finish the partitionning
+w
+
+Now set the filesystem and mount the partitions
+# mkfs.vfat /dev/<part1>
+# mkfs.ext4 /dev/<part2>
+# mkdir root boot
+# mount /dev/<part1> boot
+# mount /dev/<part2> root
+
+Then mount the debian image (the model)
+To do so first determine the "offset" :
+# parted <linux_image>.img
+u	#Ask to change the unit
+B	#Unit is block
+p	#Print the values
+Look at the column "Start" and note down the value for both partitions
+In this exemple we assume: 4194304 and 62914560
+
+Now mount them
+# mkdir root-model boot-model
+# mount -o loop,offset=4194304 <linux_image>.img boot-model
+# mount -o loop,offset=62914560 <linux_image>.img root-model
+
+Then copy the content from the model to the new one
+# cp -r -p boot-model/* boot/.
+# cp -r -p root-model/* root/.
+
+Now start the linux and apply the file installation_ros_debian
+
+
+To pack all the files in a single archive:
+tar -czf astups_raspberry.tar.gz 2014-12-24-wheezy-raspbian.zip astups_raspberry.img astups_raspberry.boot.iso astups_raspberry.root.iso create_image installation_ros prepare_the_linux use_the_new_linux --transform "s|^|astups_raspberry/|"

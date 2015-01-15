@@ -1,0 +1,108 @@
+Installation Raspberry Pi
+-------------------------
+Written by Raphaël Lallement, <raphael . lallement [at] laposte . net>
+Last update 15/01/2014
+Partially based on: http://www.pobot.org/ROS-sur-RaspberryPi.html?lang=fr
+
+
+Foreword
+--------
+Reminder:
+$ command to be run by the user (defaut: pi)
+# command to be run by root
+
+Prepare the Linux
+-----------------
+
+Based on rasbian (astups custom install or generic) version: 2014-12-24-wheezy-raspbian.img
+
+Once the Linux has started
+$ ssh pi@<rasppi_address>
+
+First thing first, configure the root passwd to allow to connect as root through ssh
+$ sudo su
+# passwd
+From now on to turn into root (for command with #), just call 'sudo su'
+And to come back to the normal user Ctrl-D
+
+Set the locale
+$ sudo vim /etc/locale.gen
+Uncomment the line necessary for your needs, e.g. fr_FR.UTF-8 UTF-8
+(Warning this next command is really long, see Appendix)
+$ sudo locale-gen
+
+Prepare the software
+$ sudo apt-get update
+$ sudo apt-get upgrade
+
+$ sudo apt-get install cmake git vim nano make gcc libboost-all-dev
+
+Bootstrap the ros install
+$ sudo apt-get install python-setuptools
+$ sudo easy_install pip
+$ sudo pip install -U rosdep rosinstall_generator wstool rosinstall
+
+Initialise the rosdep
+# rosdep init
+# rosdep fix-permissions
+# rosdep update
+
+Create the catkin workspace
+# mkdir /opt/ros-src
+# cd /opt/ros-src
+# rosinstall_generator ros_comm --rosdistro indigo --deps --wet-only --exclude roslisp --tar > indigo-ros_comm-wet.rosinstall
+# wstool init src indigo-ros_comm-wet.rosinstall
+
+Install the dependencies
+# apt-get install checkinstall
+# git clone https://github.com/ros/console_bridge.git
+# cd console_bridge
+# cmake .
+# checkinstall make install
+(the sequence of input is "Enter, "Enter", "2", "libconsole-bridge-dev", "Enter")
+# cd ..
+# wget http://archive.raspbian.org/raspbian/pool/main/l/lz4/liblz4-1_0.0~r122-2_armhf.deb
+# wget http://archive.raspbian.org/raspbian/pool/main/l/lz4/liblz4-dev_0.0~r122-2_armhf.deb
+# dpkg -i liblz4-1_0.0~r122-2_armhf.deb liblz4-dev_0.0~r122-2_armhf.deb
+
+Start the ROS install
+(Warning this command is bit long)
+# rosdep install --from-paths src --ignore-src --rosdistro indigo -y -r --os=debian:wheezy
+(Warning very long command, see Appendix)
+# ./src/catkin/bin/catkin_make_isolated --install -DCMAKE_BUILD_TYPE=Release --install-space /opt/ros/indigo
+
+Now configure the environment
+$ cd ~
+$ vim .bashrc
+Add the line:
+source /opt/ros/indigo/setup.bash
+$ source .bashrc
+
+Create the workspace
+$ mkdir -p ros/src
+$ cd ros/src
+$ catkin_init_workspace
+$ cd ..
+$ catkin_make
+It will initialise the directory (no source needed in src)
+
+Now you can add this new workspace to the environment
+$ cd ~
+$ vim .bashrc
+Add the line:
+source ${HOME}/ros/devel/setup.bash
+
+Finally f you want to remotly connect ROS nodes to the raspberry (e.g. visualiser, ...)
+Then configure the ROS variables
+$ export ROS_IP="<ip_of_the_raspberry>"
+$ export ROS_MASTER_URI="http://<ip_of_the_raspberry>:11311"
+
+
+
+
+
+Appendix
+--------
+
+To run a command in background and still allow SSH to disconnect:
+> nohup <command> [<input/output redirection>] &
