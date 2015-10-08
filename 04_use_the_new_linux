@@ -1,0 +1,79 @@
+How to properly use the brand new Linux
+---------------------------------------
+
+This file describes how to operate the new image.
+
+
+
+Requirements
+------------
+-A computer with Linux (called COMP from now on)
+-The raspberry (called RASP), and an SD to copy the image into (or the SD from
+	the last step '03_create_image').
+
+
+
+Use the image to prepare a new SD card
+--------------------------------------
+Copy the image to the SD
+$ sudo dd if=<output_file>.img of=/dev/<SD_device> bs=1M
+
+
+
+Logins
+------
+Two logins:
+pi	raspberry
+root	root
+
+
+
+After first boot
+----------------
+To use the new Linux to its full extent (from COMP)
+$ ssh pi@<raspberry_pi>
+
+Once connected, you can extend the filesystem to fill the SD card to its maximum
+$ sudo raspi-config
+
+
+
+Change the keyboard
+-------------------
+Add keyboard support, call
+$ sudo dpkg-reconfigure keyboard-configuration
+Change the keyboard using the prompt
+
+$ sudo service keyboard-setup restart
+
+
+
+Note on ROS
+-----------
+ROS in decomposed of two parts:
+* The distribution, located in /opt/ros-src. To add new ROS functionnalities you
+	need to (as root) add them and compile them. The tools are then
+	installed on /opt/ros/indigo/. (Note: this path is added by default in
+	the environment of 'pi' user.)
+* A user workspace is created in ~/ros, for the user 'pi' (and for 'root').
+
+
+
+WiringPi
+--------
+WiringPi has been installed at system level, you can find it and use it in most
+build system. For instance it is possible to use it in CMake:
+find_package(wiringPi REQUIRED)
+include_directories(${wiringPi_INCLUDE_DIRS})
+target_link_libraries(<target> ${wiringPi_LIBRARIES})
+
+Or in a Makefile:
+<target>:
+	g++ <file> -o <target> -lwiringPi
+
+
+
+
+
+Written by Raphaël Lallement, <raphael . lallement [at] laposte . net>
+Last update 05/10/2015

@@ -2,25 +2,28 @@ Custom-made Linux for Raspberry Pi
 ----------------------------------
 
 This project provides a modified Linux based on RaspBian.
+It offers tools for programmers:
+gcc,g++	- C and C++ compilers
+make	- The generic Linux build system
+CMake	- Cross-Platform Makefile Generator, project manger
+Vim,Nano- In terminal editors
+Git	- Distributed revision control system (a bit like SVN, a lot better in fact)
+ROS	- A middleware for component-based developpment, provides many basic modules
+Boost	- A multi-purpose, very efficient, set of C++ libraries
+wiringPi- A library to handle and use the raspberry GPIO
 
-It offers more defaults tools:
-ROS
-Boost
-gcc/g++
-cmake
-...
+
 
 This repo only contain the file on how to do.
 The reading order is:
- *prepare_the_linux
- *installation_ros
- *create_image
- *use_the_new_linux
+ *01_prepare_the_linux
+ *02_installation_ros
+ *03_create_image
+ *04_use_the_new_linux
 
 
 Download
 --------
-
 The image is available at:
 http://homepages.laas.fr/rlalleme/en/misc.html
 

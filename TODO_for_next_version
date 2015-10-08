@@ -1,0 +1,65 @@
+Things to change to create the propoer image
+--------------------------------------------
+LC_ALL=C
+Update the /etc/network/interfaces (e.g. add auto to eth0, use part in Appendix B)
+Add exemple for ROS and wiringPi (in CMake, MAke, ...)
+
+
+
+General TODOs
+-------------
+Turn this process into scripts to automate it
+Put back the exemples (use the text in this Appendix A)
+Add a documentation on how to read commands (e.g. $ for user, # for root)
+Add to the documentation how to use add a ROS package to the distribution
+
+
+
+
+
+Appendix A
+----------
+
+Examples
+--------
+Some demo codes are provided:
+~/hello_world: the "hello world" in C++ using Makefile to compile
+
+~/ros/src/hello_publisher  \_ Demo codes for ROS (publisher and subscriber, from the ROS tutorial)
+~/ros/src/hello_subscriber /
+
+
+
+
+
+Appendix B
+-----------
+
+Modify /etc/interfaces/network
+auto lo
+iface lo inet loopback
+
+auto eth0
+allow-hotplug eth0
+iface eth0 inet dhcp
+
+allow-hotplug wlan0
+iface wlan0 inet manual
+wpa-roam /etc/wpa_supplicant/wpa_supplicant.conf
+iface default inet dhcp
+
+
+Put template for wpa_supplicant
+for wep, wpa_wpa2
+Add network block such as the following in
+/etc/wpa_supplicant/wpa_supplicant.conf
+ 
+network={
+       ssid="<ssid>"
+       scan_ssid=$_SCAN
+       proto=WPA RSN
+       key_mgmt=WPA-PSK
+       pairwise=CCMP TKIP
+       group=CCMP TKIP
+       psk="<passwd>"
+}

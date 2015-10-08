@@ -1,0 +1,112 @@
+This file describe the process to create a custom Linux
+-------------------------------------------------------
+
+The goal of this part is to turn the downloaded raspbian into a partition system
+usable for the next steps.
+
+
+
+Requirements
+------------
+-A computer with Linux (called COMP from now on)
+-A raspberry and an SD card with at least 4Go (called respectively RASP
+ and SD)
+-Download the raspbian, it will serve as a model: 
+ https://www.raspberrypi.org/downloads/raspbian/
+ At the time of the writing: 2015-05-05-raspbian-wheezy.zip
+ (Remember to check the SHA-1)
+
+
+
+Foreword
+--------
+Reminder:
+$ command to be run by the user (defaut: pi)
+# command to be run by root
+
+The first step takes place on COMP with the SD plugged in.
+So determine which device is attached to it
+# fdisk -l
+This device will be referred as /dev/<sd>
+
+
+
+Create a correct volume
+-----------------------
+First create the appropriate partitions
+For instance to have a 100M partition for the boot and a 3.8G for the system
+# fdisk /dev/<sd>
+o<Enter>	#to erase everything
+n<Enter>	#then create a new primary partition
+<Enter>		#Chooses the type primary
+<Enter>		#Sets the partition number to 1
+<Enter>		#Places the first sector to the default value
++100M<Enter>	#Create a 100M partition
+
+Then
+n<Enter>	#Create a new partition again
+<Enter>		#Chooses the type primary
+<Enter>		#Sets the partition number to 2
+<Enter>		#Places the first sector to the default value
+8194047<Enter>	#to create a 3.8G partition (3.8 * 1024 * 1024 * 2 - 1 + 206848)
+					block size to sector ----^   ^      ^
+						       0-indexed ----|      |
+				      index of the last previous sector ----|
+
+Then change the type of the first partition to VFAT
+t<Enter>	#Change the type
+1<Enter>	#Select the first partition
+c<Enter>	#Choose VFAT format
+
+Finish the partitioning
+w<Enter>		#Write the changes to the SD
+
+
+
+Copy the content from the raspbian to the new volume
+----------------------------------------------------
+Now set the filesystem and mount the partitions, the two partitions created
+before are referred as '/dev/<part1>' and '/dev/<part2>'
+# mkfs.vfat /dev/<part1>
+# mkfs.ext4 /dev/<part2>
+# mkdir root boot
+# mount /dev/<part1> boot
+# mount /dev/<part2> root
+
+Then mount the debian image (the model) first unzip it.
+# unzip <raspbian>.zip
+
+To do so first determine the "offset" :
+# parted <raspbian_image>.img
+u	#Ask to change the unit
+B	#Unit is block
+p	#Print the values
+Look at the column "Start" and note down the value for both partitions
+In this example we assume: 4194304 and 62914560
+q	#Quit parted
+
+Now mount them
+# mkdir root-model boot-model
+# mount -t vfat -o loop,offset=<4194304> <linux_image>.img boot-model
+# mount -o loop,offset=<62914560> <linux_image>.img root-model
+
+Then copy the content from the model to the new one
+# cp -r -p boot-model/* boot/.
+# cp -r -p root-model/* root/.
+
+To finish unmount the partitions and unplug the SD
+# umount root boot root-model boot-model
+
+
+
+Next step
+---------
+Now start RASP with the linux from SD and now it is possible to move on the next
+step, follow the steps from '02_installation_ros_debian'
+
+
+
+
+
+Written by Raphaël Lallement, <raphael . lallement [at] laposte . net>
+Last update 05/10/2015

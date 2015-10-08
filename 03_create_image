@@ -1,0 +1,89 @@
+How to create an image from a fully configured SD
+-------------------------------------------------
+
+This part present the last step to create a custom-made image: pack the result 
+from the previous steps into an image that can be distributed. You need a
+running raspbian, follow the steps from '01_prepare_the_linux' and then
+'02_installation_ros'.
+
+
+
+Requirements
+------------
+-A computer with Linux (called COMP from now on)
+-A fully configured Linux is set up on the SD (and that there are two
+	partitions: boot and root). The SD should be plugged on the computer
+	COMP (not the raspberry) but NOT MOUNTED !
+
+
+
+Create the different images
+---------------------------
+First copy both partitions
+$ sudo dd if=/dev/<partition_for_boot> of=<output_file>.boot.iso
+$ sudo dd if=/dev/<partition_for_root> of=<output_file>.root.iso
+Example: sudo dd if=/dev/mmcblk0p2 of=astups_raspberry.root.iso
+
+Then create a "blank" partitions
+$ sudo dd if=/dev/zero of=<output_file>.img bs=1 count=0 seek=4G
+
+
+
+Prepare the "holder"
+--------------------
+Format the "blank" image to hold the two images
+$ sudo fdisk <output_file>.img
+N.B. Create partitions at least the same size that the two images
+n		#Create a first partition for the boot
+<Enter>		#To use pirmary mode
+<Enter>		#To use partition number 1
+<Enter>		#To locate the partition at the beginning of the image
++100M		#To create a partition of 100Mo
+a		#Toggle bootflag on the partition
+1		#Apply the change on partition 1
+t		#Change the flag type
+c		#Use FAT32 format
+n		#Create a second partition for the root
+<Enter>		#To use primary mode
+<Enter>		#To use partition number 2
+<Enter>		#To locate the partition just after the first one
+<Enter>		#To use all the remaining space
+w		#Write the new partitions
+
+
+
+Finish by inserting the two images in the holder
+------------------------------------------------
+Create two devices from the partitions
+$ sudo kpartx -a <output_file>.img
+(You can check with: ls /dev/mapper, there should be some "loop0p<i>")
+
+Now it is possible to copy the content to the partitions
+$ sudo dd if=<output_file>.boot.iso of=/dev/mapper/loop0p1 bs=1M
+$ sudo dd if=<output_file>.root.iso of=/dev/mapper/loop0p2 bs=1M
+
+Finally remove the mapping
+$ sudo kpartx -d <output_file>.img
+
+
+
+Now the image can be distributed
+--------------------------------
+Create the md5 for all the files published
+$ md5sum <output_file>.img > <output_file>.img.md5
+
+To pack all the files in a single archive:
+tar -czf astups-raspbian.tar.gz <files-to-add> --transform "s|^|astups_raspberry/|"
+	(It is advised to do a md5 checksum for this file)
+
+
+
+Next step
+---------
+The next step is to use the image, refer to '04_use_the_new_linux'.
+
+
+
+
+Written by Raphaël Lallement, <raphael . lallement [at] laposte . net>
+Last update 05/10/2015
